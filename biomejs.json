@@ -1,0 +1,15 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Biome: biome.json の $schema バージョンも追従させ、パッケージ更新とまとめる",
+  "extends": [
+    "customManagers:biomeVersions"
+  ],
+  "packageRules": [
+    {
+      "matchPackageNames": [
+        "@biomejs/biome"
+      ],
+      "groupName": "biome"
+    }
+  ]
+}

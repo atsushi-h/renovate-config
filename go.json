@@ -1,0 +1,19 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Go: 更新後に go mod tidy を実行し、indirect 依存の単独更新は抑止する",
+  "postUpdateOptions": [
+    "gomodTidy"
+  ],
+  "packageRules": [
+    {
+      "description": "indirect 依存は直接依存の更新に追従させる（単独 PR を作らない）",
+      "matchManagers": [
+        "gomod"
+      ],
+      "matchDepTypes": [
+        "indirect"
+      ],
+      "enabled": false
+    }
+  ]
+}

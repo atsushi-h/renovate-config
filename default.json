@@ -1,0 +1,86 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "共通ベース: best-practices + ラベル / コミット規約 / automerge ポリシー（言語非依存）",
+  "extends": [
+    "config:best-practices",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(chore)"
+  ],
+  "labels": [
+    "dependencies"
+  ],
+  "semanticCommitScope": "deps",
+  "commitMessageTopic": "{{depName}}",
+  "commitMessageExtra": "to {{newVersion}}",
+  "prConcurrentLimit": 30,
+  "prHourlyLimit": 10,
+  "automergeType": "pr",
+  "automergeStrategy": "squash",
+  "platformAutomerge": true,
+  "packageRules": [
+    {
+      "description": "major は目視レビュー前提でラベルのみ",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "labels": [
+        "dependencies",
+        "major"
+      ]
+    },
+    {
+      "description": "minor は目視レビュー前提でラベルのみ",
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "labels": [
+        "dependencies",
+        "minor"
+      ]
+    },
+    {
+      "description": "patch は automerge",
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "labels": [
+        "dependencies",
+        "patch"
+      ],
+      "automerge": true
+    },
+    {
+      "description": "digest pin / lockfile メンテは major/minor/patch に該当しないため識別用ラベルを付ける",
+      "matchUpdateTypes": [
+        "digest",
+        "lockFileMaintenance"
+      ],
+      "addLabels": [
+        "digest"
+      ]
+    },
+    {
+      "description": "devDependencies を識別できるようにする",
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "addLabels": [
+        "devDependencies"
+      ]
+    },
+    {
+      "description": "GitHub Actions は SHA pin 込みで automerge",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "automerge": true
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "labels": [
+      "dependencies",
+      "security"
+    ],
+    "automerge": false
+  }
+}

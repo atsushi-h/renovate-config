@@ -1,0 +1,21 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      # プリセットはデフォルトブランチから全 PJ に即座に読まれるため、
+      # 壊れた設定を main に入れないことがこのリポジトリの最重要事項。
+      - name: Validate presets
+        run: npx --yes --package renovate@latest -- renovate-config-validator --strict *.json

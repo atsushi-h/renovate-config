@@ -1,0 +1,45 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Expo / React Native: SDK 互換のため major は Dependency Dashboard 承認制にする",
+  "packageRules": [
+    {
+      "description": "Expo SDK / RN 系の minor・patch はまとめて 1 PR にする",
+      "groupName": "expo sdk",
+      "matchPackageNames": [
+        "expo",
+        "expo-*",
+        "@expo/*",
+        "react-native",
+        "react-native-*"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ]
+    },
+    {
+      "description": "Expo SDK / RN の major は expo install --fix で手動対応する",
+      "matchPackageNames": [
+        "expo",
+        "expo-*",
+        "@expo/*",
+        "react-native"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "dependencyDashboardApproval": true,
+      "automerge": false
+    },
+    {
+      "description": "React 本体は型定義と足並みを揃える",
+      "matchPackageNames": [
+        "react",
+        "react-dom",
+        "@types/react",
+        "@types/react-dom"
+      ],
+      "groupName": "react"
+    }
+  ]
+}
