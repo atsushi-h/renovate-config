@@ -9,14 +9,21 @@
   "labels": [
     "dependencies"
   ],
+  "timezone": "Asia/Tokyo",
   "semanticCommitScope": "deps",
   "commitMessageTopic": "{{depName}}",
   "commitMessageExtra": "to {{newVersion}}",
-  "prConcurrentLimit": 30,
-  "prHourlyLimit": 10,
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 5,
   "automergeType": "pr",
   "automergeStrategy": "squash",
   "platformAutomerge": true,
+  "lockFileMaintenance": {
+    "description": "best-practices の既定（月曜 0-3 時）は self-hosted の cron 起動時刻と重ならず発火しないため、時間帯不問の「月曜のみ」に緩める",
+    "schedule": [
+      "* * * * 1"
+    ]
+  },
   "packageRules": [
     {
       "description": "major は目視レビュー前提でラベルのみ",

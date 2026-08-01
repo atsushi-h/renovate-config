@@ -38,12 +38,44 @@
   - `helpers:pinGitHubActionDigests` — GitHub Actions を commit SHA で固定
   - `docker:pinDigests` — Docker イメージを sha256 で固定
   - `:pinDevDependencies` — devDependencies を exact version に固定
-  - `:maintainLockFilesWeekly` — 毎週月曜早朝に lockfile メンテ PR
+  - `:maintainLockFilesWeekly` — 毎週月曜に lockfile メンテ PR（下記のとおり `schedule` は上書きしている）
   - `:configMigration` — 非推奨記法の自動移行 PR
   - `abandonments:recommended` — メンテ放棄パッケージの警告
 - コミットは `chore(deps): update X to Y` 形式（`:semanticCommits` で明示的に有効化）
 - `patch` と GitHub Actions は automerge（squash / platform automerge）
 - 脆弱性アラートは automerge しない
+- PR 上限は `prConcurrentLimit: 5` / `prHourlyLimit: 5`
+- `timezone: "Asia/Tokyo"`（Renovate の既定は UTC。`schedule` の曜日・時刻判定に効く）
+- `lockFileMaintenance.schedule` を `["* * * * 1"]`（月曜のみ・時間帯不問）に上書き
+
+## 実行タイミングについて
+
+**`schedule` はこのプリセットに含めていない。** 実行タイミングは各プロジェクトの
+`.github/workflows/renovate.yml` の cron で管理する。
+
+self-hosted Renovate（`renovatebot/github-action`）ではゲートが 2 段になるため。
+
+| 段 | 制御するもの |
+|---|---|
+| workflow の `cron` | Renovate プロセスが**起動**するタイミング |
+| `renovate.json` の `schedule` | 起動したプロセスが**ブランチ / PR を作ってよい**時間帯 |
+
+両方を満たしたときだけ PR が出る。cron の起動時刻が `schedule` の枠外だと **PR が一切作られない**。
+GitHub Actions のスケジュール実行は数分〜数十分遅延するのが常態なので、狭い `schedule` を併用すると
+遅延で枠を外して PR が出ない事故も起きる。
+
+`lockFileMaintenance.schedule` を緩めているのも同じ理由。`:maintainLockFilesWeekly` の既定
+`["* 0-3 * * 1"]` は cron の起動時刻と重ならず、**定期実行では一度も発火しない**。
+時間帯を外して「月曜のみ」にすることで、月曜の起動時に確実に走るようにしている。
+
+cron の例（GitHub Actions の cron は UTC 固定）:
+
+```yaml
+on:
+  schedule:
+    - cron: '0 22 * * *' # 毎日 7:00 JST
+  workflow_dispatch:
+```
 
 ## プロジェクト側でオーバーライドする
 
@@ -96,11 +128,16 @@ npx --yes --package renovate@latest -- renovate-config-validator --strict *.json
 
 CI（`.github/workflows/validate.yml`）でも同じチェックを実行している。
 
-プリセット展開後の最終的な設定を確認したい場合は dry-run する（`RENOVATE_TOKEN` に repo read 権限の PAT が必要）。
+ただし **`renovate-config-validator` はリモートプリセットを解決しない**（存在しないプリセットを
+書いても通ってしまう）。プリセットが実際に解決されるか、マージ後の設定がどうなるかを確認するには、
+プロジェクトのディレクトリで dry-run する。
 
 ```bash
-LOG_LEVEL=debug npx --yes renovate --platform=github --dry-run=full --token=$RENOVATE_TOKEN atsushi-h/renovate-test
+GITHUB_COM_TOKEN=$(gh auth token) npx --yes --package renovate@latest -- \
+  renovate --platform=local --dry-run=extract --print-config
 ```
+
+> Renovate 44 は Node 26 では動かない（`Unsupported node environment`）。Node 24 で実行すること。
 
 ## 注意点
 
@@ -111,4 +148,5 @@ LOG_LEVEL=debug npx --yes renovate --platform=github --dry-run=full --token=$REN
 - Docker の digest 更新は updateType が `digest` なので `patch` の automerge 対象外。自動マージしたい場合は `docker.json` に `{ "matchUpdateTypes": ["digest"], "automerge": true }` を足す
 - `:pinDevDependencies` は npm publish するライブラリには不向き。該当する場合はプロジェクト側で `ignorePresets` する
 - プリセット内から同リポジトリの別プリセットを参照する場合も `github>atsushi-h/renovate-config:pnpm` のように完全形で書く
-- このリポジトリを private にする場合は、Mend Renovate App をこのリポジトリにもインストールする必要がある
+- プロジェクト側で `schedule` を書かない（理由は「実行タイミングについて」を参照）
+- このリポジトリを private にすると、Renovate を動かしている GitHub App にこのリポジトリへの読み取り権限を追加する必要がある
