@@ -122,7 +122,7 @@ Renovate は設定オプションごとにマージ方法が違う（`lib/config
 ## 検証
 
 ```bash
-npx --yes --package renovate@latest -- renovate-config-validator --strict *.json
+npx --yes --package renovate@latest -- renovate-config-validator --strict *.json .github/renovate.json
 ```
 
 > `renovate@latest` を明示しないと npx のキャッシュで古いメジャーバージョンが使われることがある。
@@ -139,6 +139,21 @@ GITHUB_COM_TOKEN=$(gh auth token) npx --yes --package renovate@latest -- \
 ```
 
 > Renovate 44 は Node 26 では動かない（`Unsupported node environment`）。Node 24 で実行すること。
+
+## このリポジトリ自体の Renovate
+
+自分のプリセットを dogfooding している。管理対象は `.github/workflows/` の GitHub Actions のみ。
+
+- 設定: `.github/renovate.json`（`github>atsushi-h/renovate-config` を extends）
+- 実行: `.github/workflows/renovate.yml`（毎朝 7:00 JST の cron + 手動実行）
+- Actions は `helpers:pinGitHubActionDigests` により commit SHA で固定し、更新は automerge される
+
+設定ファイルを**ルートの `renovate.json` ではなく `.github/renovate.json` に置いている**のは、
+`default.json` を消したときにルートの `renovate.json` が default preset として拾われ、
+自分自身を extends する状態になるのを避けるため。
+
+> 動かすには GitHub App をこのリポジトリにインストールし、リポジトリシークレットに
+> `MY_RENOVATE_APP_ID` と `MY_RENOVATE_APP_PRIVATE_KEY` を登録する必要がある。
 
 ## 注意点
 
