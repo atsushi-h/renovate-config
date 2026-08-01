@@ -26,7 +26,8 @@
 | `github>atsushi-h/renovate-config` | `default.json` | **共通ベース（必須）**。`config:best-practices` + ラベル / コミット規約 / automerge ポリシー |
 | `...:pnpm` | `pnpm.json` | 更新後に `pnpm dedupe` |
 | `...:biomejs` | `biomejs.json` | Biome の customManager + グループ化 |
-| `...:react-native` | `react-native.json` | Expo / RN。major は Dependency Dashboard 承認制 |
+| `...:react` | `react.json` | `react` / `react-dom` / `@types/react*` を 1 PR にまとめる |
+| `...:react-native` | `react-native.json` | Expo / RN。major は Dependency Dashboard 承認制。`react` を内包する |
 | `...:go` | `go.json` | `go mod tidy` + indirect 依存の単独更新を抑止 |
 | `...:terraform` | `terraform.json` | provider をまとめて 1 PR |
 | `...:docker` | `docker.json` | base image の major は automerge しない |
